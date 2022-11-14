@@ -1,7 +1,9 @@
 from random import random, shuffle
 from typing import Any, Callable
 
-Situation = dict[int, dict[str, tuple[float | Any, ...]]]
+from strategic_voting.types.situation import Situation
+from strategic_voting.types.voter import Voter
+
 Position = tuple[float, ...]
 
 
@@ -47,14 +49,16 @@ def totally_random(voters: int, options: list[Any], *_) -> Situation:
         1:{"weight":(1,1,1), "order":("B","A","C")},
     }
     """
-    situation: Situation = {}
-    for i in range(voters):
+    situation = Situation()
+    for _ in range(voters):
         own_options = options[:]
         shuffle(own_options)
-        situation[i] = {
-            "order": tuple(own_options),
-            "weight": tuple([1 for _ in options]),
-        }
+
+        weights = [random() for _ in options]
+        weights.sort(reverse=True)
+
+        voter = Voter(tuple(own_options), tuple(weights))
+        situation.voters.add(voter)
     return situation
 
 
@@ -99,12 +103,12 @@ def from_random_plane(voters: int, options: list[Any], n: int = 1) -> Situation:
     """
     max_of_n: float = n**0.5
     options_positions: dict[Any, Position] = {}
-    situation: Situation = {}
+    situation = Situation()
 
     for option in options:
         options_positions[option] = generate_position(n)
 
-    for i in range(voters):
+    for _ in range(voters):
         distances: dict[Any, float] = {}
         pos = generate_position(n)
 
@@ -117,9 +121,10 @@ def from_random_plane(voters: int, options: list[Any], n: int = 1) -> Situation:
         sorting.sort(key=lambda x: x[1])
 
         order = tuple([x[0] for x in sorting])
-        weight = tuple([max_of_n - x[1] for x in sorting])
+        weight = tuple([(max_of_n - x[1]) / max_of_n for x in sorting])
 
-        situation[i] = {"order": order, "weight": weight}
+        voter = Voter(order, weight)
+        situation.voters.add(voter)
     return situation
 
 
@@ -144,10 +149,3 @@ class VotingSituationGenerator:
 
     def __call__(self, *args: Any):
         return self._generator_options[self._option](*args)
-
-
-if __name__ == "__main__":
-    gen = VotingSituationGenerator()
-
-    b = [1, 2, 3]
-    a = gen(4, b)
