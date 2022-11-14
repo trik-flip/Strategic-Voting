@@ -7,6 +7,11 @@ class Situation:
     outcome: list[tuple[Any, int]]
     _happiness: float | None = None
 
+    def copy(self):
+        slim_copy = Situation()
+        slim_copy.voters = self.voters.copy()
+        return slim_copy
+
     @property
     def happiness(self):
         if "outcome" not in self.__dict__ or self.outcome is None:
