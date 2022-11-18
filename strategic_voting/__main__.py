@@ -6,6 +6,9 @@ voting_options = ["A", "B", "C"]
 gen = VotingSituationGenerator()
 outcome = VotingOutcome()
 
+gen.option = "plane"
+outcome.option = "vote-for-two"
+
 voting_situation = gen(7, voting_options, 3)
 
 outcome(voting_situation)

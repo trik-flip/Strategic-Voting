@@ -52,10 +52,11 @@ def best_two_voting(voting: Situation):
     options: dict[Any, int] = {}
 
     for v in voting.voters:
-        for option in enumerate(v.order[:2]):
+        for option in v.order[:2]:
             if option not in options:
                 options[option] = 0
             options[option] += 1
+
     voting.outcome = select_winning_options(options)
     return voting.outcome
 
