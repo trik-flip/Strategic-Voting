@@ -2,8 +2,10 @@ from typing import Any
 
 
 class Voter:
-    order: tuple[Any]
-    weights: tuple[float]
+    order: tuple[Any, ...]
+    weights: tuple[float, ...]
+    _happiness: float
+    scaled_happiness: float
 
     @property
     def happiness(self):
@@ -13,9 +15,6 @@ class Voter:
     def happiness(self, value):
         if value in self.order:
             self._happiness = self.weights[self.order.index(value)]
-
-    _happiness: float
-    scaled_happiness: float
 
     def __init__(self, order, weight) -> None:
         self.order = order
