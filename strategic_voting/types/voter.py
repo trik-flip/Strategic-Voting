@@ -23,7 +23,7 @@ class Voter:
     def happiness2(self,value):
         if value in self.order:
             weighted_outcome = len(value)**2
-            weighted_preference = self.weights[self.order.index(value)]*(len(self.order))
+            weighted_preference = self.weights[self.order.index(value)]*(len(self.order)-self.order.index(value))
             self._happiness2 = 1/(1+abs(weighted_outcome - weighted_preference))
     def __init__(self, order, weight) -> None:
         self.order = order
