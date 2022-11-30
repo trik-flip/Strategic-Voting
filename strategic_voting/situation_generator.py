@@ -3,8 +3,34 @@ from typing import Any, Callable
 
 from strategic_voting.types.situation import Situation
 from strategic_voting.types.voter import Voter
-from strategic_voting.util import profiler
+from strategic_voting.util import profiler, Singleton
 Position = tuple[float, ...]
+
+SituationGen = Callable[[int, list[Any], Any], Situation]
+
+
+class VotingSituationGenerator(metaclass=Singleton):
+    """Order and use generator functions"""
+
+    _generator_options: dict[str, SituationGen] = {}
+
+    option: str = "random"
+
+    @staticmethod
+    def register(name: str):
+        def outer_func(func: SituationGen):
+            def inner_func(*args, **kwargs):
+                return func(*args, **kwargs)
+            instance = VotingSituationGenerator()
+            instance._generator_options[name] = inner_func
+            return inner_func
+        return outer_func
+
+    @profiler.profile
+    def generate(self, *args: Any):
+        situation = self._generator_options[self.option](*args)
+        situation.voters = sorted(situation.voters, key=lambda v: v.order)
+        return situation
 
 
 @profiler.profile
@@ -30,6 +56,7 @@ def generate_position(n: int) -> Position:
 
 
 @profiler.profile
+@VotingSituationGenerator.register("random")
 def totally_random(voters: int, options: list[Any], *_) -> Situation:
     """Create voters which are totally random, there is no logic in the order of options
 
@@ -61,11 +88,12 @@ def totally_random(voters: int, options: list[Any], *_) -> Situation:
         weights.sort(reverse=True)
 
         voter = Voter(tuple(own_options), tuple(weights))
-        situation.voters.add(voter)
+        situation.voters.append(voter)
     return situation
 
 
 @profiler.profile
+@VotingSituationGenerator.register("plane")
 def from_random_plane(voters: int, options: list[Any], n: int = 1) -> Situation:
     """This function tries to mimic the logic used when choosing a option
 
@@ -130,31 +158,5 @@ def from_random_plane(voters: int, options: list[Any], n: int = 1) -> Situation:
         weight = tuple([(max_of_n - x[1]) / max_of_n for x in sorting])
 
         voter = Voter(order, weight)
-        situation.voters.add(voter)
+        situation.voters.append(voter)
     return situation
-
-
-class VotingSituationGenerator:
-    """Order and use generator functions"""
-
-    _generator_options: dict[str, Callable[[int, list[Any], Any], Situation]] = {
-        "random": totally_random,
-        "plane": from_random_plane,
-    }
-
-    _option: str = "random"
-
-    @property
-    @profiler.profile
-    def option(self) -> str:
-        return self._option
-
-    @option.setter
-    @profiler.profile
-    def option(self, val: str):
-        if val in self._generator_options:
-            self._option = val
-
-    @profiler.profile
-    def __call__(self, *args: Any):
-        return self._generator_options[self._option](*args)
