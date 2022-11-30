@@ -1,92 +1,67 @@
 from typing import Any, Callable
 
 from strategic_voting.types.situation import Situation
-from strategic_voting.util import profiler
+from strategic_voting.types.voter import Voter
+from strategic_voting.util import Singleton, profiler, cache
+
+
+VotingFunc = Callable[[Voter], dict[Any, int]]
 
 
 @profiler.profile
-def select_winning_options(options: dict[Any, int]):
-    sorted_options = [(k, v) for k, v in options.items()]
-    sorted_options.sort(key=lambda x: x[1], reverse=True)
-    return sorted_options
+def to_simple_list(votes: dict[Any, int]):
+    return tuple(votes[x] for x in sorted(votes))
 
 
-@profiler.profile
-def plurality_voting(voting: Situation):
-    options: dict[Any, int] = {}
+class VotingCalculator(metaclass=Singleton):
+    _voting_systems: dict[str, VotingFunc] = {}
+    option: str = "plurality"
 
-    for v in voting.voters:
-        for option in v.order[:1]:
-            if option not in options:
-                options[option] = 0
-            options[option] += 1
+    @staticmethod
+    def register(name: str):
+        def outer_func(func: VotingFunc):
+            def inner_func(voter: Voter):
+                return func(voter)
+            instance = VotingCalculator()
+            instance._voting_systems[name] = func
+            return inner_func
+        return outer_func
 
-    voting.outcome = select_winning_options(options)
-    return voting.outcome
-
-
-@profiler.profile
-def borda_voting(voting: Situation):
-    options: dict[Any, int] = {}
-
-    for v in voting.voters:
-        for i, option in enumerate(v.order):
-            if option not in options:
-                options[option] = 0
-            options[option] += len(v.order) - i - 1
-
-    voting.outcome = select_winning_options(options)
-    return voting.outcome
-
-
-@profiler.profile
-def anti_plurality_voting(voting: Situation):
-    options: dict[Any, int] = {}
-
-    for v in voting.voters:
-        for option in v.order[:-1]:
-            if option not in options:
-                options[option] = 0
-            options[option] += 1
-
-    voting.outcome = select_winning_options(options)
-    return voting.outcome
-
-
-@profiler.profile
-def best_two_voting(voting: Situation):
-    options: dict[Any, int] = {}
-
-    for v in voting.voters:
-        for option in v.order[:2]:
-            if option not in options:
-                options[option] = 0
-            options[option] += 1
-
-    voting.outcome = select_winning_options(options)
-    return voting.outcome
-
-
-class VotingOutcome:
-    _voting_systems: dict[str, Callable[[Situation], list[Any]]] = {
-        "plurality": plurality_voting,
-        "borda": borda_voting,
-        "anti-plurality": anti_plurality_voting,
-        "vote-for-two": best_two_voting,
-    }
-    _option: str = "plurality"
-
-    @property
+    @cache
     @profiler.profile
-    def option(self) -> str:
-        return self._option
+    def calc(self, voter: Voter):
+        return to_simple_list(self._voting_systems[self.option](voter))
 
-    @option.setter
-    @profiler.profile
-    def option(self, val: str):
-        if val in self._voting_systems:
-            self._option = val
 
-    @profiler.profile
-    def __call__(self, situation: Situation):
-        return self._voting_systems[self._option](situation)
+@profiler.profile
+@VotingCalculator.register("plurality")
+def plurality_vote(voter: Voter):
+    pref = {option: 0 for option in voter.order}
+    pref[voter.order[0]] = 1
+    return pref
+
+
+@profiler.profile
+@VotingCalculator.register("borda")
+def borda_vote(voter: Voter):
+    max_score = len(voter.order) - 1
+    pref = {option: max_score -
+            voter.order.index(option) for option in voter.order}
+    return pref
+
+
+@profiler.profile
+@VotingCalculator.register("anti-plurality")
+def anti_plurality_vote(voter: Voter):
+    pref = {option: 1 for option in voter.order}
+    pref[voter.order[-1]] = 0
+    return pref
+
+
+@profiler.profile
+@VotingCalculator.register("vote-for-two")
+def best_two_vote(voter: Voter):
+    pref = {option: 0 for option in voter.order}
+    for o in voter.order[:2]:
+        pref[o] = 1
+    return pref
