@@ -1,7 +1,27 @@
 from time import time_ns
 
 
-class Profiler:
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(
+                Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+def cache(func):
+    def cached_func(*args, **kwargs):
+        key = args + tuple(kwargs.items())
+        if key not in cached_func.interal_cache:
+            cached_func.interal_cache[key] = func(*args, **kwargs)
+        return cached_func.interal_cache[key]
+    cached_func.interal_cache = {}
+    return cached_func
+
+
+class Profiler(metaclass=Singleton):
     s = 1_000_000_000
     ms = 1_000_000
     us = 1_000
@@ -18,24 +38,20 @@ class Profiler:
     def start(self, name="main"):
         if name not in self.timers:
             self.timers[name] = {"start": [], "stop": [], "hits": 0}
-
         self.timers[name]["start"] += [time_ns()]
 
     def stop(self, name="main"):
         if name not in self.timers:
             raise Exception(f"{name} is not a valid timer")
-
         self.timers[name]["stop"] += [time_ns()]
         self.timers[name]["hits"] += 1
 
     def total_time(self, name="main"):
         if name not in self.timers:
             raise Exception(f"{name} is not a valid timer")
-
         if len(self.timers[name]["start"]) != self.timers[name]["hits"]:
             print(f"[WARNING] - {name} timer is not stopped")
             return 0
-
         total = 0
         for start, stop in zip(self.timers[name]["start"], self.timers[name]["stop"]):
             total += stop - start
@@ -45,12 +61,12 @@ class Profiler:
 
         name = f"Function:{func.__name__}"
 
-        def new_func(*args, **kwargs):
+        def profiled_func(*args, **kwargs):
             self.start(name)
             result = func(*args, **kwargs)
             self.stop(name)
             return result
-        return new_func
+        return profiled_func
 
     def result(self):
         all_times = list(self.funcs.items())
@@ -76,10 +92,9 @@ class Profiler:
             hc = self.timers[timer]["hits"]
             tpc = "not called" if self.timers[timer]["hits"] == 0 else format_time(
                 tt/hc)
-
             if not zero_runners and hc == 0:
                 continue
-            if tt/hc < min_time:
+            if min_time != 0 and (hc == 0 or tt/hc < min_time):
                 continue
             print(f"{timer:{max(longest_key,7)}}\t|\t{ftt:8}\t|\t{hc:12}\t|\t{tpc}")
 

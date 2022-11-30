@@ -6,7 +6,8 @@ from strategic_voting.util import profiler
 class Voter:
     order: tuple[Any, ...]
     weights: tuple[float, ...]
-    _happiness: float
+    _happiness:  float
+    _happiness_cache: dict[Any, float]
     _happiness2: float
     scaled_happiness: float
 
@@ -18,8 +19,11 @@ class Voter:
     @happiness.setter
     @profiler.profile
     def happiness(self, value):
-        if value in self.order:
-            self._happiness = self.weights[self.order.index(value)]
+        if value not in self._happiness_cache:
+            self._happiness_cache[value] = self.weights[self.order.index(
+                value)]
+
+        self._happiness = self._happiness_cache[value]
 
     @property
     @profiler.profile
@@ -39,3 +43,4 @@ class Voter:
     def __init__(self, order, weight) -> None:
         self.order = order
         self.weights = weight
+        self._happiness_cache = {}
