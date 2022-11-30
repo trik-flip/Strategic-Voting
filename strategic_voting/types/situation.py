@@ -33,13 +33,24 @@ class Situation:
             voter_happiness2_list.append(voter_info.happiness2)
 
         # Why is it scaled?
+        min_voter_happiness_list = min(voter_happiness_list)
+        max_voter_happiness_list = max(voter_happiness_list)
+
+        min_voter_happiness2_list = min(voter_happiness2_list)
+        max_voter_happiness2_list = max(voter_happiness2_list)
+
         for voter_info in self.voters:
             voter_happiness_scaled = (
-                voter_info.happiness - min(voter_happiness_list)
-            ) / (max(voter_happiness_list) - min(voter_happiness_list))
+                voter_info.happiness - min_voter_happiness_list
+            ) / (max_voter_happiness_list - min_voter_happiness_list)
+
             total_happiness += voter_happiness_scaled
-            voter_happiness2_scaled = (voter_info.happiness2 - min(voter_happiness2_list)) / (max(voter_happiness2_list) - min(voter_happiness2_list))
+
+            voter_happiness2_scaled = (voter_info.happiness2 - min_voter_happiness2_list) / (
+                max_voter_happiness2_list - min_voter_happiness2_list)
+
             total_happiness2 += voter_happiness2_scaled
+
             voter_info.scaled_happiness = voter_happiness_scaled
             voter_info.scaled_happiness2 = voter_happiness2_scaled
 
