@@ -5,6 +5,10 @@ from strategic_voting.util import profiler
 
 
 class Situation:
+    @profiler.profile
+    def votes(self, voting_calc):
+        return [voting_calc.calc(v) for v in self.voters]
+
     voters: set[Voter]
     outcome: list[tuple[Any, int]]
     _happiness: float | None = None
@@ -67,6 +71,5 @@ class Situation:
     def winner(self):
         return self.outcome[0][0]
 
-    @profiler.profile
     def __init__(self) -> None:
         self.voters = set()
