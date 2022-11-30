@@ -1,14 +1,17 @@
 from typing import Any, Callable
 
 from strategic_voting.types.situation import Situation
+from strategic_voting.util import profiler
 
 
+@profiler.profile
 def select_winning_options(options: dict[Any, int]):
     sorted_options = [(k, v) for k, v in options.items()]
     sorted_options.sort(key=lambda x: x[1], reverse=True)
     return sorted_options
 
 
+@profiler.profile
 def plurality_voting(voting: Situation):
     options: dict[Any, int] = {}
 
@@ -22,6 +25,7 @@ def plurality_voting(voting: Situation):
     return voting.outcome
 
 
+@profiler.profile
 def borda_voting(voting: Situation):
     options: dict[Any, int] = {}
 
@@ -35,6 +39,7 @@ def borda_voting(voting: Situation):
     return voting.outcome
 
 
+@profiler.profile
 def anti_plurality_voting(voting: Situation):
     options: dict[Any, int] = {}
 
@@ -48,6 +53,7 @@ def anti_plurality_voting(voting: Situation):
     return voting.outcome
 
 
+@profiler.profile
 def best_two_voting(voting: Situation):
     options: dict[Any, int] = {}
 
@@ -71,13 +77,16 @@ class VotingOutcome:
     _option: str = "plurality"
 
     @property
+    @profiler.profile
     def option(self) -> str:
         return self._option
 
     @option.setter
+    @profiler.profile
     def option(self, val: str):
         if val in self._voting_systems:
             self._option = val
 
+    @profiler.profile
     def __call__(self, situation: Situation):
         return self._voting_systems[self._option](situation)

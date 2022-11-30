@@ -1,5 +1,7 @@
 from typing import Any
-from .voter import Voter
+
+from strategic_voting.types.voter import Voter
+from strategic_voting.util import profiler
 
 
 class Situation:
@@ -8,13 +10,15 @@ class Situation:
     _happiness: float | None = None
     _happiness2: float | None = None
 
+    @profiler.profile
     def copy(self):
         slim_copy = Situation()
         slim_copy.voters = self.voters.copy()
         return slim_copy
 
     @property
-    def happiness(self):
+    @profiler.profile
+    def total_happiness(self):
         if "outcome" not in self.__dict__ or self.outcome is None:
             raise Exception("the outcome is not yet calculated")
 
@@ -59,8 +63,10 @@ class Situation:
         return self._happiness, self._happiness2
 
     @property
+    @profiler.profile
     def winner(self):
         return self.outcome[0][0]
 
+    @profiler.profile
     def __init__(self) -> None:
         self.voters = set()

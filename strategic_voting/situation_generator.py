@@ -3,10 +3,11 @@ from typing import Any, Callable
 
 from strategic_voting.types.situation import Situation
 from strategic_voting.types.voter import Voter
-
+from strategic_voting.util import profiler
 Position = tuple[float, ...]
 
 
+@profiler.profile
 def calculate_distance_between(self: Position, other: Position) -> float:
     total: float = 0
     for x, y in zip(self, other):
@@ -14,6 +15,7 @@ def calculate_distance_between(self: Position, other: Position) -> float:
     return total**0.5
 
 
+@profiler.profile
 def generate_position(n: int) -> Position:
     """Create a random position for n dimentions
     # Example
@@ -27,6 +29,7 @@ def generate_position(n: int) -> Position:
     return tuple([random() for _ in range(n)])
 
 
+@profiler.profile
 def totally_random(voters: int, options: list[Any], *_) -> Situation:
     """Create voters which are totally random, there is no logic in the order of options
 
@@ -62,6 +65,7 @@ def totally_random(voters: int, options: list[Any], *_) -> Situation:
     return situation
 
 
+@profiler.profile
 def from_random_plane(voters: int, options: list[Any], n: int = 1) -> Situation:
     """This function tries to mimic the logic used when choosing a option
 
@@ -113,10 +117,12 @@ def from_random_plane(voters: int, options: list[Any], n: int = 1) -> Situation:
         pos = generate_position(n)
 
         for option in options:
-            distance = calculate_distance_between(pos, options_positions[option])
+            distance = calculate_distance_between(
+                pos, options_positions[option])
             distances[option] = distance
 
-        sorting: list[tuple[Any, float]] = [(k, v) for k, v in distances.items()]
+        sorting: list[tuple[Any, float]] = [
+            (k, v) for k, v in distances.items()]
         # smallest distance first, biggest last
         sorting.sort(key=lambda x: x[1])
 
@@ -139,13 +145,16 @@ class VotingSituationGenerator:
     _option: str = "random"
 
     @property
+    @profiler.profile
     def option(self) -> str:
         return self._option
 
     @option.setter
+    @profiler.profile
     def option(self, val: str):
         if val in self._generator_options:
             self._option = val
 
+    @profiler.profile
     def __call__(self, *args: Any):
         return self._generator_options[self._option](*args)
