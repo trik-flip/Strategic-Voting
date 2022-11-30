@@ -9,7 +9,7 @@ class Situation:
     def votes(self, voting_calc):
         return [voting_calc.calc(v) for v in self.voters]
 
-    voters: set[Voter]
+    voters: list[Voter]
     outcome: list[tuple[Any, int]]
     _happiness: float | None = None
     _happiness2: float | None = None
@@ -72,4 +72,4 @@ class Situation:
         return self.outcome[0][0]
 
     def __init__(self) -> None:
-        self.voters = set()
+        self.voters = []
