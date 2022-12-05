@@ -1,8 +1,7 @@
 from typing import Any, Callable
 
-from strategic_voting.types.situation import Situation
 from strategic_voting.types.voter import Voter
-from strategic_voting.util import Singleton, profiler, cache
+from strategic_voting.util import Singleton, profiler
 
 
 VotingFunc = Callable[[Voter], dict[Any, int]]
@@ -27,7 +26,6 @@ class VotingCalculator(metaclass=Singleton):
             return inner_func
         return outer_func
 
-    @cache
     @profiler.profile
     def calc(self, voter: Voter):
         return to_simple_list(self._voting_systems[self.option](voter))
