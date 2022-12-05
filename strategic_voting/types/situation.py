@@ -5,14 +5,15 @@ from strategic_voting.util import profiler
 
 
 class Situation:
-    @profiler.profile
-    def votes(self, voting_calc):
-        return [voting_calc.calc(v) for v in self.voters]
 
     voters: list[Voter]
     outcome: list[tuple[Any, int]]
     _happiness: float | None = None
     _happiness2: float | None = None
+
+    @profiler.profile
+    def votes(self, voting_calc):
+        return [voting_calc.calc(v) for v in self.voters]
 
     @profiler.profile
     def copy(self):
@@ -26,8 +27,6 @@ class Situation:
         if "outcome" not in self.__dict__ or self.outcome is None:
             raise Exception("the outcome is not yet calculated")
 
-        if self._happiness and self._happiness2 is not None:
-            return self._happiness, self._happiness2
 
         total_happiness = 0
         total_happiness2 = 0
@@ -69,7 +68,7 @@ class Situation:
     @property
     @profiler.profile
     def winner(self):
-        return self.outcome[0][0]
+        return sorted(self.outcome,key=lambda x:x[1],reverse=True)[0][0]
 
     def __init__(self) -> None:
         self.voters = []
