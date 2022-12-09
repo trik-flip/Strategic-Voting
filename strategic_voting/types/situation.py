@@ -8,8 +8,8 @@ class Situation:
 
     voters: list[Voter]
     outcome: list[tuple[Any, int]]
-    _happiness: float | None = None
-    _happiness2: float | None = None
+    _happiness: float = None
+    _happiness2: float = None
 
     @profiler.profile
     def votes(self, voting_calc):
@@ -26,7 +26,6 @@ class Situation:
     def total_happiness(self):
         if "outcome" not in self.__dict__ or self.outcome is None:
             raise Exception("the outcome is not yet calculated")
-
 
         total_happiness = 0
         total_happiness2 = 0
@@ -53,8 +52,9 @@ class Situation:
 
             total_happiness += voter_happiness_scaled
 
-            voter_happiness2_scaled = (voter_info.happiness2 - min_voter_happiness2_list) / (
-                max_voter_happiness2_list - min_voter_happiness2_list)
+            voter_happiness2_scaled = (
+                voter_info.happiness2 - min_voter_happiness2_list
+            ) / (max_voter_happiness2_list - min_voter_happiness2_list)
 
             total_happiness2 += voter_happiness2_scaled
 
@@ -68,7 +68,7 @@ class Situation:
     @property
     @profiler.profile
     def winner(self):
-        return sorted(self.outcome,key=lambda x:x[1],reverse=True)[0][0]
+        return sorted(self.outcome, key=lambda x: x[1], reverse=True)[0][0]
 
     def __init__(self) -> None:
         self.voters = []
