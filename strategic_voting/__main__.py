@@ -20,8 +20,8 @@ calc = VotingCalculator()
 simple_calc = SimpleVotingCalculator()
 
 generator.option = "random"
-calc.option = "plurality"
-simple_calc.option = "plurality"
+calc.option = "borda"
+simple_calc.option = "borda"
 num_voters = 10
 
 profiler.start()
@@ -29,12 +29,13 @@ profiler.start()
 voting_situation = generator.generate(num_voters, voting_options, 1)
 print(f"All voting options: {voting_options}")
 
+print("True votes")
 true_outcome = voting_outcome(voting_situation.votes(calc))
 print(f"True voting outcome:{true_outcome}")
 print(f"True voting winner: {get_winner(true_outcome, voting_options)}")
 voting_situation.outcome = [(o, out) for o, out in zip(voting_options, true_outcome)]
-print(f"outcome: {voting_situation.outcome}")
-print(f"total happiness: {voting_situation.total_happiness}")
+print(f"Outcome: {voting_situation.outcome}")
+print(f"Total happiness: {(voting_situation.total_happiness[0]/num_voters)*100, (voting_situation.total_happiness[1]/num_voters)*100}") # (weighted based, distance based)
 
 mean_happiness_gain_total = 0
 for i, (voter, options) in enumerate(
@@ -43,7 +44,7 @@ for i, (voter, options) in enumerate(
     print(f"===== Voter {i+1:2} =====")
     print(f"True preferrence: \t\t{voter.order}")
     print(f"True happiness: \t\t{voter.happiness}")
-    print(f"Tactical voting option: \t{len(options)}")
+    print(f"Tactical voting options: \t{len(options)}")
     print()
     mean_happiness_gain_voter = 0
     for o_index, option in enumerate(options):
@@ -53,9 +54,9 @@ for i, (voter, options) in enumerate(
         print(f"New voter preferrence: \t\t{option[0]}")
         print(f"New outcome: \t\t\t{option[1]}")
         print(f"New happiness: \t\t\t{option[2]}")
-        print(f"gain in happiness: \t\t{happiness_gain}")
+        print(f"Gain in happiness: \t\t{happiness_gain}")
         print(f"New overall happiness: \t\t{option[4]}")
-        print(f"old overall happiness: \t\t{option[5]}")
+        print(f"Old overall happiness: \t\t{option[5]}")
     print("=" * 50)
     print()
     mean_happiness_gain_total += mean_happiness_gain_voter
@@ -72,7 +73,7 @@ for voter, options in strategic_voting_options_in_situation(
         if len(options) != 0
         else calc.calc(voter)
     )
-    risk = risk + (len(options) / num_voters)
+    risk = risk + len(options)
 
 tactical_outcome = voting_outcome([v for v in voter_option.values()])
 print(f"Tactical voting outcome:{tactical_outcome}")
@@ -80,13 +81,14 @@ print(f"Tactical voting winner: {get_winner(tactical_outcome, voting_options)}")
 voting_situation.outcome = [
     (o, out) for o, out in zip(voting_options, tactical_outcome)
 ]
-print(voting_situation.outcome)
-print(voting_situation.total_happiness)
+print(f"Outcome: {voting_situation.outcome}")
+print(f"Total happiness: {(voting_situation.total_happiness[0]/num_voters)*100, (voting_situation.total_happiness[1]/num_voters)*100}")
 
 
 
 print("\nRisk analysis")
 
+risk = risk / num_voters
 risk1 = (mean_happiness_gain_total)/num_voters
 
 print(f"Risk based on tactical vote options: ", risk)
