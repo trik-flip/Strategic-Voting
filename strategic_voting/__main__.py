@@ -36,12 +36,24 @@ print(f"outcome: {voting_situation.outcome}")
 print(f"total happiness: {voting_situation.total_happiness}")
 
 
-for voter, options in strategic_voting_options_in_situation(
-    voting_situation, calc
-).items():
-    print(voter.order)
-    for o in options:
-        print(f"\t{o}")
+for i, (voter, options) in enumerate(
+    strategic_voting_options_in_situation(voting_situation, calc).items()
+):
+    print(f"===== Voter {i+1:2} =====")
+    print(f"True preferrence: \t\t{voter.order}")
+    print(f"True preferrence: \t\t{voter.happiness}")
+    print(f"Tactical voting option: \t{len(options)}")
+    print()
+    for o_index, option in enumerate(options):
+        print(f"--- Tactical voting option {o_index+1:2} ---")
+        print(f"New voter preferrence: \t\t{option[0]}")
+        print(f"New outcome: \t\t\t{option[1]}")
+        print(f"New happiness: \t\t\t{option[2]}")
+        print(f"gain in happiness: \t\t{option[2]-option[3]}")
+        print(f"New overall happiness: \t\t{option[4]}")
+        print(f"old overall happiness: \t\t{option[5]}")
+    print("=" * 50)
+    print()
 
 
 print("Tactical votes")
