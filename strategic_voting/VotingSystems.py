@@ -1,8 +1,7 @@
 import numpy as np
 
 
-
-def get_risk(tva):
+def risk(tva):
     num_dishonest_votes = 0
     for voter in tva["voting_situation"].keys():
         if not np.array_equal(tva['voting_situation'][voter]["vote"], tva['voting_situation'][voter]["strategic_vote"]):
@@ -10,4 +9,7 @@ def get_risk(tva):
     tva["risk"] = num_dishonest_votes
     return num_dishonest_votes
 
-
+def risk2(options):
+    # Risk according to the sum of difference in happiness
+    risk = sum(x[1] for x in options)
+    return risk
