@@ -118,7 +118,7 @@ def strategic_voting_options_in_situation(
 
                         output = (
                             order,
-                            new_winner,
+                            outcome,
                             voter.happiness,
                             true_voter_happiness,
                             new_happy,
