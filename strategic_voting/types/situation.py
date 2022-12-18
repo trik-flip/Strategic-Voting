@@ -21,6 +21,16 @@ class Situation:
         slim_copy.voters = self.voters.copy()
         return slim_copy
 
+    def new_happiness(self, winner):
+        total_happiness = 0
+        total_happiness2 = 0
+        for voter in self.voters:
+            voter.happiness = winner
+            voter.happiness2 = winner
+            total_happiness += voter.happiness
+            total_happiness2 += voter.happiness2
+        return total_happiness, total_happiness2
+
     @property
     @profiler.profile
     def total_happiness(self):
