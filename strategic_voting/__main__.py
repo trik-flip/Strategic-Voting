@@ -87,6 +87,17 @@ print(f"Total happiness: {(voting_situation.total_happiness[0]/num_voters)*100, 
 
 
 print("\nRisk analysis")
+"""
+The risk functions are implemented here.
+
+Function 1: 
+Divides the sum of the number of tactical voting options of all voters (line 76) by the number of voters.
+Returns an average number of tactical voting options per voter.
+
+Function 2:
+Sums the total happiness gain for all voters (lines40, 51, 52 and 62) and divides this number by the number of voters.
+Returns an average happiness gain per voter.
+"""
 
 risk = risk / num_voters
 risk1 = (mean_happiness_gain_total)/num_voters
