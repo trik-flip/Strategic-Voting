@@ -20,8 +20,8 @@ calc = VotingCalculator()
 simple_calc = SimpleVotingCalculator()
 
 generator.option = "plane"
-calc.option = "borda"
-simple_calc.option = "borda"
+calc.option = "plurality"
+simple_calc.option = "plurality"
 
 profiler.start()
 
@@ -41,7 +41,7 @@ for i, (voter, options) in enumerate(
 ):
     print(f"===== Voter {i+1:2} =====")
     print(f"True preferrence: \t\t{voter.order}")
-    print(f"True preferrence: \t\t{voter.happiness}")
+    print(f"True happiness: \t\t{voter.happiness}")
     print(f"Tactical voting option: \t{len(options)}")
     print()
     for o_index, option in enumerate(options):
